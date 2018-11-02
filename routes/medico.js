@@ -3,11 +3,11 @@
 // **
 // == Requires
 var express = require('express');
-var bcrypt = require('bcryptjs');
 // == Modelos
-var Usuario = require('../models/usuario');
+var Medico = require('../models/medico');
+// == Constantes
 // == Middleware
-var mdAutenticacion = require('../middlewares/autenticacion')
+var mdAutenticacion = require('../middlewares/autenticacion');
 
 // **
 // **** INICIAR VARIABLES ****
@@ -19,134 +19,130 @@ var app = express();
 // **** CONTENIDO - RUTAS ****
 // **
 // == listar
-app.get('/',(req, res, next)=>{
+app.get('/',(req, res)=>{
     // obtener de la db
-    //usuario.find({},(err,data)=>{
-    Usuario.find({},'nombre apellido correo').exec((err,usuarios)=>{
+    Medico.find({},'nombre img usuario hospital').exec((err,medicos)=>{
         // valido si hay algun error y los retorno
         if(err){
             return res.status(500).json({
                 ok: false,
-                message: 'Error cargando los usuarios',
+                message: 'Error cargando los medicos',
                 errors: err
             });
         }
         // si todo salio bien se retornan los datos
         return res.status(200).json({
             ok: true,
-            message: 'Lista de usuarios',
-            data: usuarios
+            message: 'Lista de medicos',
+            data: medicos
         });
     });
 });
-// == Crear
+// == crear
 app.post('/',mdAutenticacion.verificaToken,(req, res)=>{
     // variable con los datos recibidos
-    var body=req.body;
+    let body=req.body;
     // variable para guardar
-    var usuario = new Usuario({
+    let medico = new Medico({
         nombre: body.nombre,
-        apellido: body.apellido,
-        correo: body.correo,
-        contrasena: bcrypt.hashSync(body.contrasena, 10),
         img: body.img,
-        rol: body.rol
+        hospital: body.hospital,
+        usuario: req.usuario._id
     });
     // guardar en la db
-    usuario.save((err,usuarioNuevo)=>{
+    medico.save((err, medicoNuevo)=>{
         // valido si hay algun error y los retorno
         if(err){
             return res.status(400).json({
                 ok: false,
-                message: 'Error al crear el usuario',
+                message: 'Error al crear el medico',
                 errors: err
             });
         }
         // si todo salio bien se retornan los datos
         return res.status(201).json({
             ok: true,
-            message:'Usuario creado exitosamente',
-            data: usuarioNuevo
-            //usuarioToken: req.usuario
+            message:'Medico creado exitosamente',
+            data: medicoNuevo
         });
     });
 });
-// == Editar
+// == editar
 app.put('/:id',mdAutenticacion.verificaToken,(req, res)=>{
     // variable con los datos recibidos
-    var id = req.params.id;
-    var body = req.body;
+    let id = req.params.id;
+    let body=req.body;
     // busco en la db
-    Usuario.findById(id,(err, usuarioBuscado)=>{
+    Medico.findById(id,(err, medicoEditado)=>{
         // valido si hay algun error y los retorno
         if(err){
             return res.status(500).json({
                 ok: false,
-                message: 'Error al editar el usuario',
+                message: 'Error al editar el medico',
                 errors: err
             });
         }
-        // valido si el usuario existe
-        if(!usuarioBuscado){
+        // valido si el medico si existe
+        if(!medicoEditado){
             return res.status(400).json({
                 ok: false,
-                message:'El usuario con el id "'+ id +'" no existe',
-                errors: {message:"El usuario no existe"}
+                message:'El medico con el id "'+ id +'" no existe',
+                errors: {message:"El medico no existe"}
             })
         }
         // organizo variables a editar
-        usuarioBuscado.nombre=body.nombre;
-        usuarioBuscado.apellido=body.apellido;
-        usuarioBuscado.correo=body.correo;
-        usuarioBuscado.rol=body.rol;
+        medicoEditado.nombre=body.nombre;
+        if(body.hospital){
+            medicoEditado.hospital=body.hospital;
+        }
         // guardo en la db
-        usuarioBuscado.save((err,usuarioEditado)=>{
+        medicoEditado.save((err, medicoEditado)=>{
             // valido si hay algun error y los retorno
             if(err){
                 return res.status(400).json({
                     ok: false,
-                    message: 'Error al editar el usuario',
+                    message: 'Error al editar el medico',
                     errors: err
                 });
             }
-            // escondo la contraseña
-            usuarioEditado.contrasena=".l."
+            // escondo el usuario del medico
+            // medicoEditado.usuario='.l.'; ---> no funciona porque es un id
             // si todo salio bien se retornan los datos
             return res.status(200).json({
                 ok: true,
-                message:'Usuario editado exitosamente',
-                data: usuarioEditado
+                message:'Medico editado exitosamente',
+                data: medicoEditado
             });
         });
     });
 });
-// == Eliminar
+// == eliminar
 app.delete('/:id',mdAutenticacion.verificaToken,(req, res)=>{
     // variable con los datos recibidos
-    var id = req.params.id;
+    let id = req.params.id;
     // busco y elimino de la db
-    Usuario.findByIdAndRemove(id,(err,usuarioEliminado)=>{
+    Medico.findByIdAndRemove(id,(err, medicoEliminado)=>{
         // valido si hay algun error y los retorno
         if(err){
             return res.status(500).json({
                 ok: false,
-                message: 'Error al eliminar el usuario',
+                message: 'Error al eliminar el medico',
                 errors: err
             });
         }
-        // valido si el usuario si existe
-        if(!usuarioEliminado){
+        // valido si el medico si existe
+        if(!medicoEliminado){
             return res.status(400).json({
                 ok: false,
-                message:'El usuario con el id "'+ id +'" no existe',
-                errors: {message:"El usuario no existe"}
+                message:'El medico con el id "'+ id +'" no existe',
+                errors: {message:"El medico no existe"}
             })
         }
         // si todo salio bien se retornan los datos
         return res.status(200).json({
             ok: true,
-            message:'Usuario eliminado exitosamente',
-            data: usuarioEliminado
+            message:'Medico eliminado exitosamente',
+            data: medicoEliminado
         });
     });
 });

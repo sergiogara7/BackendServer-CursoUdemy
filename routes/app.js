@@ -1,10 +1,19 @@
-// Requires
+// **
+// **** REQUIRES ****
+// **
+// == Requires
 var express= require('express');
 
-// Inicializar variables
+// **
+// **** INICIAR VARIABLES ****
+// **
+// == app express
 var app = express();
 
-// Ruta principal
+// **
+// **** CONTENIDO - RUTAS ****
+// **
+// == Inicio
 app.get('/',(req, res, next)=>{
     res.status(200).send({
         ok: true,
@@ -12,4 +21,7 @@ app.get('/',(req, res, next)=>{
     })
 });
 
+// **
+// **** EXPORTE ****
+// **
 module.exports = app;
