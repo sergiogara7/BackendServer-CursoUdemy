@@ -5,7 +5,8 @@
 var express = require('express');
 // == Modelos
 var Hospital = require('../models/hospital');
-// == Constantes
+// == Config
+var limit = require('../config/config').LIMIT;
 // == Middleware
 var mdAutenticacion = require('../middlewares/autenticacion');
 
@@ -20,8 +21,12 @@ var app = express();
 // **
 // == listar
 app.get('/',(req, res)=>{
+    // variable desde - opcional
+    let desde = req.query.desde || 0;
+    // seteo la varible
+    desde = Number(desde);
     // obtener de la db
-    Hospital.find({},'nombre img usuario').exec((err,hospitales)=>{
+    Hospital.find({},'nombre img usuario').skip(desde).limit(limit).populate('usuario','nombre correo').exec((err,hospitales)=>{
         // valido si hay algun error y los retorno
         if(err){
             return res.status(500).json({
@@ -30,12 +35,16 @@ app.get('/',(req, res)=>{
                 errors: err
             });
         }
-        // si todo salio bien se retornan los datos
-        return res.status(200).json({
-            ok: true,
-            message: 'Lista de hospitales',
-            data: hospitales
+        Hospital.countDocuments({},(err, conteo)=>{
+            // si todo salio bien se retornan los datos
+            return res.status(200).json({
+                ok: true,
+                message: 'Lista de hospitales',
+                data: hospitales,
+                total: conteo
+            });
         });
+        
     });
 });
 // == crear

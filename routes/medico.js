@@ -5,7 +5,8 @@
 var express = require('express');
 // == Modelos
 var Medico = require('../models/medico');
-// == Constantes
+// == Config
+var limit = require('../config/config').LIMIT;
 // == Middleware
 var mdAutenticacion = require('../middlewares/autenticacion');
 
@@ -20,8 +21,12 @@ var app = express();
 // **
 // == listar
 app.get('/',(req, res)=>{
+    // variable desde - opcional
+    let desde = req.query.desde || 0;
+    // seteo la varible
+    desde = Number(desde);
     // obtener de la db
-    Medico.find({},'nombre img usuario hospital').exec((err,medicos)=>{
+    Medico.find({},'nombre img usuario hospital').skip(desde).limit(limit).populate('usuario','nombre correo').populate('hospital').exec((err,medicos)=>{
         // valido si hay algun error y los retorno
         if(err){
             return res.status(500).json({
@@ -30,11 +35,14 @@ app.get('/',(req, res)=>{
                 errors: err
             });
         }
-        // si todo salio bien se retornan los datos
-        return res.status(200).json({
-            ok: true,
-            message: 'Lista de medicos',
-            data: medicos
+        Medico.countDocuments({},(err, conteo)=>{
+            // si todo salio bien se retornan los datos
+            return res.status(200).json({
+                ok: true,
+                message: 'Lista de medicos',
+                data: medicos,
+                total: conteo
+            });
         });
     });
 });

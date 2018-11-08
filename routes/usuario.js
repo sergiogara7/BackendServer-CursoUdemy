@@ -6,8 +6,10 @@ var express = require('express');
 var bcrypt = require('bcryptjs');
 // == Modelos
 var Usuario = require('../models/usuario');
+// == Config
+var limit = require('../config/config').LIMIT;
 // == Middleware
-var mdAutenticacion = require('../middlewares/autenticacion')
+var mdAutenticacion = require('../middlewares/autenticacion');
 
 // **
 // **** INICIAR VARIABLES ****
@@ -20,9 +22,13 @@ var app = express();
 // **
 // == listar
 app.get('/',(req, res, next)=>{
+    // variable desde - opcional
+    let desde = req.query.desde || 0;
+    // seteo la varible
+    desde = Number(desde);
     // obtener de la db
     //usuario.find({},(err,data)=>{
-    Usuario.find({},'nombre apellido correo').exec((err,usuarios)=>{
+    Usuario.find({},'nombre apellido correo').skip(desde).limit(limit).exec((err,usuarios)=>{
         // valido si hay algun error y los retorno
         if(err){
             return res.status(500).json({
@@ -31,12 +37,17 @@ app.get('/',(req, res, next)=>{
                 errors: err
             });
         }
-        // si todo salio bien se retornan los datos
-        return res.status(200).json({
-            ok: true,
-            message: 'Lista de usuarios',
-            data: usuarios
+        // cuento el total de registros 
+        Usuario.countDocuments({},(err, conteo)=>{
+            // si todo salio bien se retornan los datos
+            return res.status(200).json({
+                ok: true,
+                message: 'Lista de usuarios',
+                data: usuarios,
+                total: conteo
+            });
         });
+        
     });
 });
 // == Crear
