@@ -28,7 +28,7 @@ app.get('/',(req, res, next)=>{
     desde = Number(desde);
     // obtener de la db
     //usuario.find({},(err,data)=>{
-    Usuario.find({},'nombre apellido correo').skip(desde).limit(limit).exec((err,usuarios)=>{
+    Usuario.find({},'nombre apellido correo google rol img').skip(desde).limit(limit).exec((err,usuarios)=>{
         // valido si hay algun error y los retorno
         if(err){
             return res.status(500).json({
@@ -51,7 +51,7 @@ app.get('/',(req, res, next)=>{
     });
 });
 // == Crear
-app.post('/',mdAutenticacion.verificaToken,(req, res)=>{
+app.post('/',(req, res)=>{
     // variable con los datos recibidos
     var body=req.body;
     // variable para guardar
