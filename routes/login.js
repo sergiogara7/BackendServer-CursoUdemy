@@ -7,6 +7,8 @@ var bcrypt = require('bcryptjs');
 var jwt = require('jsonwebtoken');
 // == Modelos
 var Usuario =require('../models/usuario');
+// == Middleware
+var mdAutenticacion = require('../middlewares/autenticacion');
 // == Constantes
 var SEED = require('../config/config').SEED;
 var CLIENT_ID = require('../config/config').CLIENT_ID;
@@ -62,7 +64,8 @@ app.post('/',(req, res)=>{
             ok: true,
             data: usuarioDB,
             token: token,
-            id: usuarioDB._id
+            id: usuarioDB._id,
+            menu: obtenerMenu(usuarioDB.rol)
         });
     });
 });
@@ -129,7 +132,8 @@ app.post('/google', async(req, res)=>{
                     ok: true,
                     data: usuarioDB,
                     token: token,
-                    id: usuarioDB._id
+                    id: usuarioDB._id,
+                    menu: obtenerMenu(usuarioDB.rol)
                 });
             }  
         }else{
@@ -162,7 +166,8 @@ app.post('/google', async(req, res)=>{
                     message: "Usuario registrado correctamente",
                     data: usuarioDB,
                     token: token,
-                    id: usuarioDB._id
+                    id: usuarioDB._id,
+                    menu: obtenerMenu(usuarioDB.rol)
                 });
             });
         } 
@@ -175,6 +180,18 @@ app.post('/google', async(req, res)=>{
     });
     */
 });
+// == renovar Toen
+app.get('/renovar',mdAutenticacion.verificaToken,(req, res)=>{
+    // usuario recibido del token -md
+    let usuario = req.usuario;
+    // Se crea el token
+    let token = jwt.sign({usuario: usuario},SEED,{expiresIn: 14400}); //4 horas
+    // retorno
+    res.status(200).json({
+        ok: true,
+        token: token
+    })
+})
 
 // **
 // **** CONTENIDO - FUNCIONES ****
@@ -200,6 +217,40 @@ async function verify(token) {
         img: payload.picture,
         google: true
     }
+}
+// == json con el menu
+function obtenerMenu(ROLE){
+    // creo la variable con el menu
+    var menu = [
+        {
+          titulo: 'Principal',
+          icono: 'mdi mdi-gauge',
+          submenu: [
+            { titulo: 'Dashboard', url: '/dashboard'},
+            { titulo: 'ProgressBar', url: '/progress'},
+            { titulo: 'Graficas', url: '/graficas1'},
+            { titulo: 'promesas', url: '/promesas'},
+            { titulo: 'rxjs', url: '/rxjs'}
+          ]
+        },
+        {
+          titulo: 'Administrar',
+          icono: 'mdi mdi-folder-lock-open',
+          submenu: [
+            //{ titulo: 'Usuarios', url: '/usuarios'},
+            { titulo: 'Hospitales', url: '/hospitales'},
+            { titulo: 'Medicos', url: '/medicos'}
+          ]
+        }
+      ];
+    // valido si es admin
+    if(ROLE === 'ADMIN_ROLE'){
+        // si es admin agrego la opcion usuarios 
+        // unshift agrega al inicio
+        menu[1].submenu.unshift({ titulo: 'Usuarios', url: '/usuarios'});
+    }
+    //
+    return menu;
 }
 
 // **

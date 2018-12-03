@@ -180,6 +180,36 @@ app.delete('/:id',mdAutenticacion.verificaToken,(req, res)=>{
         });
     });
 });
+// == obtener
+app.get('/:id',mdAutenticacion.verificaToken,(req, res)=>{
+    // variable con los datos recibidos
+    let id = req.params.id;
+    // busco y elimino de la db
+    Hospital.findById(id).populate('usuario','nombre apellido img correo').exec((err, hospitalDB)=>{
+        // valido si hay algun error y los retorno
+        if(err){
+            return res.status(500).json({
+                ok: false,
+                message: 'Error al cargar el hospital',
+                errors: err
+            });
+        }
+        // valido si el hospital si existe
+        if(!hospitalDB){
+            return res.status(400).json({
+                ok: false,
+                message:'El hospital con el id "'+ id +'" no existe',
+                errors: {message:"El hospital no existe"}
+            })
+        }
+        // si todo salio bien se retornan los datos
+        return res.status(200).json({
+            ok: true,
+            message:'Hospital obtenido exitosamente',
+            data: hospitalDB
+        });
+    });
+});
 
 // **
 // **** EXPORTE ****

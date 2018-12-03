@@ -9,6 +9,7 @@ var SEED = require('../config/config').SEED;
 // **
 // **** EXPORTE - FUNCION ****
 // **
+// == Token
 exports.verificaToken = function(req, res, next){
     // variable recibida
     let token = req.query.token;
@@ -32,4 +33,40 @@ exports.verificaToken = function(req, res, next){
         //    decode: decode,
         //})
     });
+}
+// == Admin
+exports.verificaAdminRole = function(req, res, next){
+    // variable recibida
+    let usuario = req.usuario
+    // verificar rol
+    if(usuario.rol === 'ADMIN_ROLE'){
+        // pasar al siguiente proceso
+        next();
+    }else{
+        // retorno un error
+        return res.status(401).json({
+            ok: false,
+            message:'El permiso no es valido',
+            errors: {message: 'No eres un administrador, no tienes permisos para realizar esta accion'}
+        })
+    }
+}
+// == Admin o mismo usuario
+exports.verificaAdmin_o_mismoUsuario = function(req, res, next){
+    // variable recibida del primer md
+    let usuario = req.usuario
+    // variable recibida put
+    let id = req.params.id;
+    // verificar rol
+    if(usuario.rol === 'ADMIN_ROLE' || usuario._id === id){
+        // pasar al siguiente proceso
+        next();
+    }else{
+        // retorno un error
+        return res.status(401).json({
+            ok: false,
+            message:'El permiso no es valido',
+            errors: {message: 'No tienes permisos para realizar esta accion'}
+        })
+    }
 }

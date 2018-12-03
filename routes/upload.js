@@ -147,7 +147,7 @@ function subirPorTipo(tipo, id, nombre, res){
                 hospital.save((err,hospitalActualizado)=>{
                     // si todo salio correctamente retorno
                     return res.status(200).json({
-                        ok: false,
+                        ok: true,
                         message: 'Imagen de hospital actualizada correctamente',
                         data: hospitalActualizado
                     });
@@ -168,17 +168,18 @@ function subirPorTipo(tipo, id, nombre, res){
                 // ruta path viejo
                 var pathViejo = './uploads/'+tiposValidos[2]+'/' + medico.img;
                 // si existe un archivo anterior
-                if(fs.existsSync(pathViejo)){
+                if(fs.existsSync(pathViejo) && medico.img.length > 0){
                     // se elimina el archivo
                     fs.unlink(pathViejo);
                 }
+                
                 // agrego la imagen nueva al medico
                 medico.img = nombre;
                 // guardo en la db
                 medico.save((err,medicoActualizado)=>{
                     // si todo salio correctamente retorno
                     return res.status(200).json({
-                        ok: false,
+                        ok: true,
                         message: 'Imagen de medico actualizada correctamente',
                         data: medicoActualizado
                     });

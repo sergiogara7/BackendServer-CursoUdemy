@@ -83,7 +83,7 @@ app.post('/',(req, res)=>{
     });
 });
 // == Editar
-app.put('/:id',mdAutenticacion.verificaToken,(req, res)=>{
+app.put('/:id',[mdAutenticacion.verificaToken,mdAutenticacion.verificaAdmin_o_mismoUsuario],(req, res)=>{
     // variable con los datos recibidos
     var id = req.params.id;
     var body = req.body;
